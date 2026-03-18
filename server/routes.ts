@@ -109,9 +109,11 @@ export async function registerRoutes(
           <a href="${process.env.VITE_API_BASE || "http://localhost:5000"}/api/verify-email?token=${verificationToken}">Verify Email Address</a>
         `,
       };
-      transporter.sendMail(mailOptions)
-        .then(() => console.log(`Verification email sent to: ${email}`))
-        .catch(err => console.error(`Failed to send verification email to ${email}:`, err.message));
+      
+      const emailSent = await sendEmail(mailOptions);
+      if (!emailSent) {
+        console.error(`Warning: Registration successful but failed to send verification email to ${email}`);
+      }
 
       res.status(201).json({ success: true, user });
     } catch (e: any) {
@@ -149,9 +151,8 @@ export async function registerRoutes(
           <p>The webinar link will be shared via our Telegram and WhatsApp channels.</p>
         `,
       };
-      transporter.sendMail(mailOptions)
-        .then(() => console.log(`Webinar confirmation sent to: ${email}`))
-        .catch(err => console.error(`Webinar confirmation failed for ${email}:`, err.message));
+      
+      await sendEmail(mailOptions);
 
       res.status(201).json({ success: true, reg });
     } catch (e: any) {
@@ -231,7 +232,7 @@ export async function registerRoutes(
       await storage.updateUser(user.id, { verificationToken });
 
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"${process.env.EMAIL_FROM_NAME || 'Stock Manthan'}" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Verify Your Email Address",
         html: `
@@ -239,7 +240,7 @@ export async function registerRoutes(
           <a href="${process.env.VITE_API_BASE || "http://localhost:5000"}/api/verify-email?token=${verificationToken}">Verify Email Address</a>
         `,
       };
-      await transporter.sendMail(mailOptions);
+      await sendEmail(mailOptions);
       res.json({ success: true });
     } catch (e: any) {
       res.status(500).json({ error: "Failed to resend verification" });
@@ -329,9 +330,8 @@ export async function registerRoutes(
           </ul>
         `,
       };
-      transporter.sendMail(mailOptions)
-        .then(() => console.log(`Invoice sent to: ${user.email}`))
-        .catch(err => console.error(`Invoice delivery failed for ${user.email}:`, err.message));
+      
+      await sendEmail(mailOptions);
 
       res.status(200).json({ success: true, user });
     } catch (error) {
@@ -446,8 +446,7 @@ export async function registerRoutes(
           .replace(/\[NAME\]/g, reg.name)
           .replace(/\[EMAIL\]/g, reg.email);
 
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
+        await sendEmail({
           to: reg.email,
           subject: subject,
           html: personalizedBody.replace(/\n/g, "<br>"),
