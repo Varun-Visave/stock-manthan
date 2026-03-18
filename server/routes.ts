@@ -487,8 +487,8 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "OK", timestamp: new Date().toISOString() });
+  app.get("/health-check", (req, res) => {
+    res.json({ status: "OK", source: "cron-ping", timestamp: new Date().toISOString() });
   });
 
   return httpServer;

@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { setupCron } from "./cron-service";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import dotenv from 'dotenv';
@@ -63,6 +64,11 @@ app.use((req, res, next) => {
 
 (async () => {
   await registerRoutes(httpServer, app);
+
+  // START CRON SERVICE (to keep Render backend alive)
+  if (process.env.NODE_ENV === "production") {
+    setupCron();
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
