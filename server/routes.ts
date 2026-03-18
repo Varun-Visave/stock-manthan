@@ -8,17 +8,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import rateLimit from "express-rate-limit";
 import { randomBytes } from "crypto";
-
-dotenv.config();
-
-// Create email transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+import { transporter, sendContactEmail, sendEmail } from "./email";
 
 declare module "express-session" {
   interface SessionData {
@@ -110,7 +100,7 @@ export async function registerRoutes(
       // NO Session here - force verification
 
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"${process.env.EMAIL_FROM_NAME || 'Stock Manthan'}" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Welcome to Stock Manthan! Please Verify Your Email",
         html: `
@@ -119,7 +109,9 @@ export async function registerRoutes(
           <a href="${process.env.VITE_API_BASE || "http://localhost:5000"}/api/verify-email?token=${verificationToken}">Verify Email Address</a>
         `,
       };
-      transporter.sendMail(mailOptions).catch(console.error);
+      transporter.sendMail(mailOptions)
+        .then(() => console.log(`Verification email sent to: ${email}`))
+        .catch(err => console.error(`Failed to send verification email to ${email}:`, err.message));
 
       res.status(201).json({ success: true, user });
     } catch (e: any) {
@@ -148,7 +140,7 @@ export async function registerRoutes(
 
       // Auto email confirmation
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"${process.env.EMAIL_FROM_NAME || 'Stock Manthan'}" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Webinar Registration Confirmed",
         html: `
@@ -157,7 +149,9 @@ export async function registerRoutes(
           <p>The webinar link will be shared via our Telegram and WhatsApp channels.</p>
         `,
       };
-      transporter.sendMail(mailOptions).catch(console.error);
+      transporter.sendMail(mailOptions)
+        .then(() => console.log(`Webinar confirmation sent to: ${email}`))
+        .catch(err => console.error(`Webinar confirmation failed for ${email}:`, err.message));
 
       res.status(201).json({ success: true, reg });
     } catch (e: any) {
@@ -314,7 +308,7 @@ export async function registerRoutes(
 
       // Send Invoice Email
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"${process.env.EMAIL_FROM_NAME || 'Stock Manthan'}" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: `Your Invoice for Stock Manthan ${plan} Plan`,
         html: `
@@ -335,7 +329,9 @@ export async function registerRoutes(
           </ul>
         `,
       };
-      transporter.sendMail(mailOptions).catch(console.error);
+      transporter.sendMail(mailOptions)
+        .then(() => console.log(`Invoice sent to: ${user.email}`))
+        .catch(err => console.error(`Invoice delivery failed for ${user.email}:`, err.message));
 
       res.status(200).json({ success: true, user });
     } catch (error) {
@@ -474,18 +470,15 @@ export async function registerRoutes(
           .status(400)
           .json({ success: false, message: "All fields are required" });
       }
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER,
-        subject: `New Contact Form Message from ${name}`,
-        html: `<p>Name: ${name}</p><p>Email: ${email}</p><p>Phone: ${phone}</p><p>Message: ${message}</p>`,
-      };
-      await transporter.sendMail(mailOptions);
-      res
-        .status(200)
-        .json({ success: true, message: "Email sent successfully" });
+      const sent = await sendContactEmail(name, email, phone, message);
+      if (sent) {
+        res.status(200).json({ success: true, message: "Email sent successfully" });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send email. Consult server logs." });
+      }
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to send email" });
+      console.error('Contact form error:', error);
+      res.status(500).json({ success: false, message: "Internal server error" });
     }
   });
 

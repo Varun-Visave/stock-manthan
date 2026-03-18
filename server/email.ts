@@ -1,26 +1,68 @@
-import dotenv from 'dotenv';
-dotenv.config();
-// server/email.ts
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
+dotenv.config();
+
+/**
+ * Configure Transporter with robust Gmail settings.
+ * Using host/port explicitly is often more reliable than just 'service: "gmail"'.
+ */
+export const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // Use SSL
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: process.env.EMAIL_PASS, // NOTE: Must be a 16-digit Google App Password if 2FA is enabled
+  },
+  tls: {
+    // This allows connections to work on certain platforms that might have strict TLS policies
+    rejectUnauthorized: false
   }
 });
 
+// Verify connection configuration
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('SMTP Connection Error:', error);
+  } else {
+    console.log('SMTP Server is ready to take messages');
+  }
+});
+
+/**
+ * Generic email sender for high-volume use cases or one-offs
+ */
+export async function sendEmail(options: nodemailer.SendMailOptions): Promise<boolean> {
+  try {
+    const info = await transporter.sendMail({
+      from: `"${process.env.EMAIL_FROM_NAME || 'Stock Manthan'}" <${process.env.EMAIL_USER}>`,
+      ...options,
+    });
+    console.log('Email sent successfully:', info.messageId);
+    return true;
+  } catch (error: any) {
+    console.error('Nodemailer error sending email:', error.message);
+    if (error.response) {
+      console.error('Nodemailer server response:', error.response);
+    }
+    return false;
+  }
+}
+
+/**
+ * Specifically for Contact Form
+ */
 export async function sendContactEmail(
   name: string, 
   email: string, 
   phone: string,
   message: string
 ): Promise<boolean> {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  return sendEmail({
     to: process.env.EMAIL_USER,
     subject: `New Contact Form Message from ${name}`,
+    replyTo: email,
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px;">
         <h2 style="color: #2563eb;">New Contact Form Submission</h2>
@@ -39,14 +81,5 @@ export async function sendContactEmail(
         </p>
       </div>
     `,
-    replyTo: email
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    return true;
-  } catch (error) {
-    console.error('Email error:', error);
-    return false;
-  }
+  });
 }
