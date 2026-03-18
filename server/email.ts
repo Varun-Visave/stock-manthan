@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -8,43 +8,51 @@ dotenv.config();
  * Using host/port explicitly is often more reliable than just 'service: "gmail"'.
  */
 export const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // Use SSL
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // Must be false for 587 (automatically defaults to using STARTTLS)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS, // NOTE: Must be a 16-digit Google App Password if 2FA is enabled
   },
   tls: {
     // This allows connections to work on certain platforms that might have strict TLS policies
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false,
+  },
+  // Add timeouts so it NEVER hangs indefinitely on Render
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
+  logger: true, // Output SMTP traffic to logs to immediately spot blocking
+  debug: true
 });
 
 // Verify connection configuration
 transporter.verify((error, success) => {
   if (error) {
-    console.error('SMTP Connection Error:', error);
+    console.error("SMTP Connection Error:", error);
   } else {
-    console.log('SMTP Server is ready to take messages');
+    console.log("SMTP Server is ready to take messages");
   }
 });
 
 /**
  * Generic email sender for high-volume use cases or one-offs
  */
-export async function sendEmail(options: nodemailer.SendMailOptions): Promise<boolean> {
+export async function sendEmail(
+  options: nodemailer.SendMailOptions,
+): Promise<boolean> {
   try {
     const info = await transporter.sendMail({
-      from: `"${process.env.EMAIL_FROM_NAME || 'Stock Manthan'}" <${process.env.EMAIL_USER}>`,
+      from: `"${process.env.EMAIL_FROM_NAME || "Stock Manthan"}" <${process.env.EMAIL_USER}>`,
       ...options,
     });
-    console.log('Email sent successfully:', info.messageId);
+    console.log("Email sent successfully:", info.messageId);
     return true;
   } catch (error: any) {
-    console.error('Nodemailer error sending email:', error.message);
+    console.error("Nodemailer error sending email:", error.message);
     if (error.response) {
-      console.error('Nodemailer server response:', error.response);
+      console.error("Nodemailer server response:", error.response);
     }
     return false;
   }
@@ -54,10 +62,10 @@ export async function sendEmail(options: nodemailer.SendMailOptions): Promise<bo
  * Specifically for Contact Form
  */
 export async function sendContactEmail(
-  name: string, 
-  email: string, 
+  name: string,
+  email: string,
   phone: string,
-  message: string
+  message: string,
 ): Promise<boolean> {
   return sendEmail({
     to: process.env.EMAIL_USER,
