@@ -7,15 +7,16 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
-import type { VariantProps } from "class-variance-authority";
-import type { Easing } from "framer-motion";
-import { motion } from "framer-motion";
+import { VariantProps } from "class-variance-authority";
+import { motion, type Variants } from "framer-motion";
 import { AlertTriangle, Check, FileText, Mail, Shield } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import { toast } from "sonner";
 import { AnimatedGridPattern } from "../components/ui/gridPattern";
 
 
-export const fadeInUp = {
+export const fadeInUp: Variants = {
   initial: { opacity: 0, y: 24 },
   animate: {
     opacity: 1,
@@ -61,7 +62,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-export const staggerContainer = {
+export const staggerContainer: Variants = {
   initial: {},
   animate: {
     transition: {
@@ -71,7 +72,7 @@ export const staggerContainer = {
 };
 
 // Individual card animation
-export const cardFadeUp = {
+export const cardFadeUp: Variants = {
   initial: {
     opacity: 0,
     y: 28,
@@ -96,7 +97,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: {},
   show: {
     transition: {
@@ -106,9 +107,7 @@ const containerVariants = {
   },
 };
 
-const ease: Easing = "easeOut";
-
-const textVariants = {
+const textVariants: Variants = {
   hidden: {
     opacity: 0,
     y: 24,
@@ -118,39 +117,39 @@ const textVariants = {
     y: 0,
     transition: {
       duration: 0.7,
-      ease,
+      ease: "easeOut" as const,
     },
   },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, ease },
+    transition: { duration: 0.7, ease: "easeOut" as const },
   },
 };
 
-const fadeLeft = {
+const fadeLeft: Variants = {
   hidden: { opacity: 0, x: -32 },
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.7, ease },
+    transition: { duration: 0.7, ease: "easeOut" as const },
   },
 };
 
-const fadeRight = {
+const fadeRight: Variants = {
   hidden: { opacity: 0, x: 32 },
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.7, ease },
+    transition: { duration: 0.7, ease: "easeOut" as const },
   },
 };
 
-const listContainer = {
+const listContainer: Variants = {
   hidden: {},
   visible: {
     transition: {
@@ -159,47 +158,72 @@ const listContainer = {
   },
 };
 
-const listItem = {
+const listItem: Variants = {
   hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease },
+    transition: { duration: 0.4, ease: "easeOut" as const },
   },
 };
 
-const stagger = {
+const stagger: Variants = {
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.15 },
   },
 };
 
-const card = {
+const card: Variants = {
   hidden: { opacity: 0, y: 32 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease },
+    transition: { duration: 0.6, ease: "easeOut" as const },
   },
 };
 
-const badge = {
+const badge: Variants = {
   hidden: { opacity: 0, scale: 0.9 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.4, ease },
+    transition: { duration: 0.4, ease: "easeOut" as const },
   },
 };
 
 export function ServicesPage() {
+  const [, setLocation] = useLocation();
   const [contactForm, setContactForm] = useState({
     name: "",
     email: "",
     phone: "",
     message: "",
   });
+  const [user, setUser] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/dashboard")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d?.user && setUser(d.user))
+      .catch(() => {});
+  }, []);
+
+  const handleSubscribe = (plan: string) => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    if (user.memberType === "free") {
+      setLocation("/dashboard?tab=upgrade");
+      return;
+    }
+    if (user.memberType === plan) {
+      return; // Already on this plan
+    }
+    setLocation(`/payment/${plan}`);
+  };
 
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "sending" | "success" | "error"
@@ -1083,6 +1107,163 @@ export function ServicesPage() {
           </div>
         </div>
       </section>
+      {/* Newly Appended Pricing Section */}
+      <section className="py-20 md:py-24 bg-white border-t border-border">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="space-y-12">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-medium text-text-primary">
+                Membership Plans
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Join our community to access high-quality research and insights.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-12">
+              {/* Monthly Plan */}
+              <Card className="border border-border bg-white shadow-sm flex flex-col">
+                <CardContent className="p-8 space-y-6 flex-1 flex flex-col">
+                  <div className="text-center space-y-4 pb-6 border-b border-border">
+                    <h3 className="text-2xl font-medium text-primary">Monthly</h3>
+                    <div>
+                      <div className="text-4xl font-medium text-foreground">₹899</div>
+                      <div className="text-muted-foreground mt-1">+ GST</div>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 flex-1 text-left mt-4">
+                    <li className="font-semibold text-foreground text-sm border-b pb-2 mb-2">Included in Paid membership:</li>
+                    {["Full research reports (organized by stock)", "Price targets and buy/sell recommendations", "IPO reports and verdict", "Sector outlook reports", "Coverage universe list (Nifty 50 tagged)", "Model portfolio (Elite phase — coming soon)", "Update log"].map((text, i) => (
+                      <li key={i} className="flex items-start space-x-3 text-sm">
+                        <Check className="h-5 w-5 text-primary shrink-0" />
+                        <span className="text-foreground">{text}</span>
+                      </li>
+                    ))}
+                    <li className="font-semibold text-foreground text-sm border-b pb-2 mb-2 mt-4">Included in Free (Community):</li>
+                    {["Educational content", "Telegram & WhatsApp channel access (after registration)"].map((text, i) => (
+                      <li key={i} className="flex items-start space-x-3 text-sm">
+                        <Check className="h-5 w-5 text-green-500 shrink-0" />
+                        <span className="text-foreground">{text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(!user || user.memberType === "free") ? (
+                    <Button onClick={() => handleSubscribe("Monthly")} className="w-full mt-6 bg-primary hover:bg-primary/90" size="lg">Subscribe Now</Button>
+                  ) : (
+                    <Button 
+                      onClick={() => handleSubscribe("Monthly")} 
+                      className={`w-full mt-6 ${user.memberType === "Monthly" ? "bg-gray-400 cursor-not-allowed" : "bg-primary hover:bg-primary/90"}`} 
+                      size="lg"
+                      disabled={user.memberType === "Monthly"}
+                    >
+                      {user.memberType === "Monthly" ? `Current Plan (Expires: ${new Date(user.subscriptionExpiry).toLocaleDateString()})` : "Switch Plan"}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Quarterly Plan */}
+              <Card className="border border-border bg-white shadow-sm flex flex-col">
+                <CardContent className="p-8 space-y-6 flex-1 flex flex-col">
+                  <div className="text-center space-y-4 pb-6 border-b border-border">
+                    <h3 className="text-2xl font-medium text-primary">Quarterly</h3>
+                    <div>
+                      <div className="text-4xl font-medium text-foreground">₹1,999</div>
+                      <div className="text-muted-foreground mt-1">+ GST</div>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 flex-1 text-left mt-4">
+                    <li className="font-semibold text-foreground text-sm border-b pb-2 mb-2">Included in Paid membership:</li>
+                    {["Full research reports (organized by stock)", "Price targets and buy/sell recommendations", "IPO reports and verdict", "Sector outlook reports", "Coverage universe list (Nifty 50 tagged)", "Model portfolio (Elite phase — coming soon)", "Update log"].map((text, i) => (
+                      <li key={i} className="flex items-start space-x-3 text-sm">
+                        <Check className="h-5 w-5 text-primary shrink-0" />
+                        <span className="text-foreground">{text}</span>
+                      </li>
+                    ))}
+                    <li className="font-semibold text-foreground text-sm border-b pb-2 mb-2 mt-4">Included in Free (Community):</li>
+                    {["Educational content", "Telegram & WhatsApp channel access (after registration)"].map((text, i) => (
+                      <li key={i} className="flex items-start space-x-3 text-sm">
+                        <Check className="h-5 w-5 text-green-500 shrink-0" />
+                        <span className="text-foreground">{text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(!user || user.memberType === "free") ? (
+                    <Button onClick={() => handleSubscribe("Quarterly")} className="w-full mt-6 bg-primary hover:bg-primary/90" size="lg">Subscribe Now</Button>
+                  ) : (
+                    <Button 
+                      onClick={() => handleSubscribe("Quarterly")} 
+                      className={`w-full mt-6 ${user.memberType === "Quarterly" ? "bg-gray-400 cursor-not-allowed" : "bg-primary hover:bg-primary/90"}`} 
+                      size="lg"
+                      disabled={user.memberType === "Quarterly"}
+                    >
+                      {user.memberType === "Quarterly" ? `Current Plan (Expires: ${new Date(user.subscriptionExpiry).toLocaleDateString()})` : "Switch Plan"}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Annual Plan */}
+              <Card className="border-2 border-primary bg-white relative shadow-md flex flex-col">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-2 text-sm font-medium rounded-full">
+                  Best Value
+                </div>
+                <CardContent className="p-8 space-y-6 flex-1 flex flex-col pt-10">
+                  <div className="text-center space-y-4 pb-6 border-b border-border">
+                    <h3 className="text-2xl font-medium text-primary">Annual</h3>
+                    <div>
+                      <div className="text-4xl font-medium text-foreground">₹5,999</div>
+                      <div className="text-muted-foreground mt-1">+ GST</div>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 flex-1 text-left mt-4">
+                    <li className="font-semibold text-foreground text-sm border-b pb-2 mb-2">Included in Paid membership:</li>
+                    {["Full research reports (organized by stock)", "Price targets and buy/sell recommendations", "IPO reports and verdict", "Sector outlook reports", "Coverage universe list (Nifty 50 tagged)", "Model portfolio (Elite phase — coming soon)", "Update log"].map((text, i) => (
+                      <li key={i} className="flex items-start space-x-3 text-sm">
+                        <Check className="h-5 w-5 text-primary shrink-0" />
+                        <span className="text-foreground">{text}</span>
+                      </li>
+                    ))}
+                    <li className="font-semibold text-foreground text-sm border-b pb-2 mb-2 mt-4">Included in Free (Community):</li>
+                    {["Educational content", "Telegram & WhatsApp channel access (after registration)"].map((text, i) => (
+                      <li key={i} className="flex items-start space-x-3 text-sm">
+                        <Check className="h-5 w-5 text-green-500 shrink-0" />
+                        <span className="text-foreground">{text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(!user || user.memberType === "free") ? (
+                    <Button onClick={() => handleSubscribe("Annual")} className="w-full mt-6 bg-primary hover:bg-primary/90" size="lg">Subscribe Now</Button>
+                  ) : (
+                    <Button 
+                      onClick={() => handleSubscribe("Annual")} 
+                      className={`w-full mt-6 ${user.memberType === "Annual" ? "bg-gray-400 cursor-not-allowed" : "bg-primary hover:bg-primary/90"}`} 
+                      size="lg"
+                      disabled={user.memberType === "Annual"}
+                    >
+                      {user.memberType === "Annual" ? `Current Plan (Expires: ${new Date(user.subscriptionExpiry).toLocaleDateString()})` : "Switch Plan"}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-card p-8 rounded-xl max-w-sm w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-semibold text-center text-foreground">Authentication Required</h3>
+            <p className="text-muted-foreground text-center text-sm">Please create a free account or log in to subscribe to a paid plan.</p>
+            <div className="space-y-3">
+              <Button onClick={() => setLocation("/register")} className="w-full">Register Free Account</Button>
+              <Button onClick={() => setLocation("/login")} variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">Log In</Button>
+              <Button onClick={() => setShowAuthModal(false)} variant="ghost" className="w-full text-muted-foreground">Cancel</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

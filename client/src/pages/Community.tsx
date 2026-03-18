@@ -1,11 +1,9 @@
 import { AnimatedGridPattern } from "@/components/ui/gridPattern";
 import { useState } from "react";
+import { Link } from "wouter";
 import type { Swiper as SwiperType } from "swiper";
-// @ts-ignore
 import "swiper/css";
-// @ts-ignore
 import "swiper/css/navigation";
-// @ts-ignore
 import "swiper/css/pagination";
 import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -222,9 +220,11 @@ export default function Community() {
                   Market and sector perspectives
                 </li>
               </ul>
-              <button className="w-full py-2 rounded-full border border-sky-200 text-sky-600 text-sm font-bold group-hover:bg-sky-600 group-hover:text-white transition-all">
-                Join Free Channel
-              </button>
+              <Link href="/register">
+                <button className="w-full py-2 rounded-full border border-sky-200 text-sky-600 text-sm font-bold group-hover:bg-sky-600 group-hover:text-white transition-all">
+                  Join Free Channel
+                </button>
+              </Link>
             </div>
           </div>
 
@@ -301,9 +301,11 @@ export default function Community() {
                   Low noise, high relevance
                 </li>
               </ul>
-              <button className="w-full py-2 rounded-full border border-green-200 text-green-600 text-sm font-bold group-hover:bg-green-600 group-hover:text-white transition-all">
-                Join Community
-              </button>
+              <Link href="/register">
+                <button className="w-full py-2 rounded-full border border-green-200 text-green-600 text-sm font-bold group-hover:bg-green-600 group-hover:text-white transition-all">
+                  Join Community
+                </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,19 +1,46 @@
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, TrendingUp, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/philosophy", label: "Philosophy" },
-  { href: "/community", label: "Community" },
-];
+
+const getNavLinks = (user: any) => {
+  const baseLinks = [
+    { href: "/", label: "Home" },
+    { href: "/services", label: "Research Services" },
+    { href: "/philosophy", label: "Philosophy" },
+    { href: "/community", label: "Community" },
+    { href: "/webinar", label: "Webinar" },
+  ];
+  return baseLinks;
+};
 
 export function Navbar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/dashboard")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d?.user && setUser(d.user))
+      .catch(() => {});
+  }, [location]); // re-check if location changes
+
+  const handleLogout = async () => {
+    await fetch("/api/logout", { method: "POST" });
+    setUser(null);
+    setLocation("/");
+  };
+
+  const navLinks = getNavLinks(user);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -53,10 +80,39 @@ export function Navbar() {
                   </Button>
                 </Link>
               ))}
+              {!user ? (
+                <Link href="/login">
+                  <Button
+                    variant="ghost"
+                    className={`relative px-4 py-2 text-sm font-medium transition-colors ${location === "/login" ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Login
+                    {location === "/login" && (
+                      <motion.div layoutId="navbar-indicator" className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />
+                    )}
+                  </Button>
+                </Link>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative px-4 py-2 text-sm font-medium transition-colors text-muted-foreground hover:text-foreground">
+                      {user.name.split(" ")[0]}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setLocation("/dashboard")}>
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-500 hover:text-red-600">
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
-            <Link key={"Services"} href={"/services"}>
-              <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
+              <Link key={"Services"} href={"/services"}>
                 <Button
                   variant="default"
                   size="sm"
@@ -65,8 +121,30 @@ export function Navbar() {
                 >
                   Get Started
                 </Button>
-              </div>
-            </Link>
+              </Link>
+              {user ? (
+                <Link key={"Dashboard"} href={"/dashboard"}>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="gradient-warm-blue border-0 shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    My Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Link key={"Register"} href={"/register"}>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    data-testid="button-register"
+                    className="gradient-warm-blue border-0 shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    Join Free
+                  </Button>
+                </Link>
+              )}
+            </div>
 
             <button
               className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
@@ -112,6 +190,23 @@ export function Navbar() {
                 >
                   Get Started
                 </Button>
+                {user ? (
+                  <>
+                    <Link href="/dashboard">
+                      <Button className="w-full mt-2 gradient-warm-blue border-0">My Dashboard</Button>
+                    </Link>
+                    <Button variant="outline" className="w-full mt-2 border-red-500 text-red-500 hover:bg-red-50" onClick={handleLogout}>Logout</Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login">
+                      <Button variant="outline" className="w-full mt-2" data-testid="button-mobile-login">Login</Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button className="w-full mt-2 gradient-warm-blue border-0" data-testid="button-mobile-register">Join Free</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           )}

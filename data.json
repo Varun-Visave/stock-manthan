@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "name": "varun visave",
+      "email": "varunvisave@gmail.com",
+      "phone": "9136614065",
+      "consentGiven": true,
+      "passwordHash": "$2b$10$UHNI65duAr/MmLUJyL3UmOEPBuaMFsGcUTmCb5MhXVW/OW7trhN6C",
+      "memberType": "Quarterly",
+      "emailVerified": false,
+      "verificationToken": "2f2e6568f5a4bf58fbe2851f3463b0351de9f2e955145ae6e6f7cd7ede8ba468",
+      "id": "883479ef-7620-475d-86ea-7dcdacf0956d",
+      "createdAt": "2026-03-18T21:24:56.927Z",
+      "subscriptionExpiry": "2026-06-18T21:34:24.021Z"
+    }
+  ],
+  "reports": [
+    {
+      "type": "Research",
+      "stockName": "test",
+      "reportDate": "2026-03-18",
+      "pdfPath": "#",
+      "sebiDisclosure": true,
+      "publishedAt": "2026-03-18T21:31:53.390Z",
+      "version": "1.0",
+      "id": "5ec0caec-b3c5-477e-9ef1-8a9e14314399"
+    },
+    {
+      "type": "Research",
+      "stockName": "test 2",
+      "reportDate": "2026-03-07",
+      "pdfPath": "#",
+      "sebiDisclosure": false,
+      "publishedAt": "2026-03-18T21:32:03.545Z",
+      "version": "1.0",
+      "id": "d42f622f-8ea9-4e50-8a10-1b3c8e798dd0"
+    }
+  ],
+  "webinars": [
+    {
+      "name": "varun visave",
+      "email": "varunvisave.02@gmail.com",
+      "phone": "9136614065",
+      "id": "815a96e6-7574-4d35-9c1d-25c7330f9e4a",
+      "registeredAt": "2026-03-18T21:27:27.482Z"
+    }
+  ],
+  "invoices": [
+    {
+      "userId": "883479ef-7620-475d-86ea-7dcdacf0956d",
+      "plan": "Quarterly",
+      "baseAmount": 1999,
+      "gstAmount": 360,
+      "totalAmount": 2359,
+      "invoiceNumber": "INV-1773869664023-8834",
+      "date": "2026-03-18T21:34:24.023Z",
+      "id": "8d2407f4-8931-4fb8-afbc-6a84f140b759"
+    }
+  ],
+  "announcements": []
+}

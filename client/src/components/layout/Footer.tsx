@@ -37,20 +37,38 @@ export function Footer() {
               SEBI Registered Research Analyst – INH000014128<br></br>
               Educational content only. No personalised investment advice.
             </p>
-            <div className="mt-4">
-              {/*Investor Grievance Redressal | Disclosures | Privacy Policy */}
-              <Link href="/disclaimer" className="text-xs text-primary hover:underline">
-                Investor Grievance Redressal
+            <div className="mt-4 flex flex-wrap gap-2 text-xs">
+              <Link href="/compliance/sebi-disclosure" className="text-primary hover:underline">
+                SEBI Disclosure
               </Link>
-              <span className="mx-2 text-xs text-muted-foreground">|</span>
-              <Link href="/disclosures" className="text-xs text-primary hover:underline">
-                Disclosures
+              <span className="text-muted-foreground">|</span>
+              <Link href="/compliance/conflict-of-interest" className="text-primary hover:underline">
+                Conflict of Interest
               </Link>
-              <span className="mx-2 text-xs text-muted-foreground">|</span>
-              <Link href="/privacy-policy" className="text-xs text-primary hover:underline">
+              <span className="text-muted-foreground">|</span>
+              <Link href="/compliance/research-methodology" className="text-primary hover:underline">
+                Research Methodology
+              </Link>
+              <span className="text-muted-foreground">|</span>
+              <Link href="/compliance/risk-disclosure" className="text-primary hover:underline">
+                Risk Disclosure
+              </Link>
+              <span className="text-muted-foreground">|</span>
+              <Link href="/compliance/grievance-redressal" className="text-primary hover:underline">
+                Grievance Redressal
+              </Link>
+              <span className="text-muted-foreground">|</span>
+              <Link href="/compliance/privacy-policy" className="text-primary hover:underline">
                 Privacy Policy
               </Link>
-
+              <span className="text-muted-foreground">|</span>
+              <Link href="/compliance/refund-policy" className="text-primary hover:underline">
+                Refund Policy
+              </Link>
+              <span className="text-muted-foreground">|</span>
+              <Link href="/compliance/terms-and-conditions" className="text-primary hover:underline">
+                Terms & Conditions
+              </Link>
             </div>
           </div>
 
@@ -79,16 +97,7 @@ export function Footer() {
               </button>
             </form>
 
-            {/* Social Icons */}
             <div className="flex justify-center gap-4">
-              <a
-                href="#"
-                className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-                aria-label="YouTube"
-              >
-                <FontAwesomeIcon icon={faWhatsapp} size="xl" />
-              </a>
-
               <a
                 href="#"
                 className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
@@ -103,14 +112,6 @@ export function Footer() {
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
-              </a>
-
-              <a
-                href="#"
-                className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-                aria-label="Telegram"
-              >
-                <MessageCircle className="w-5 h-5" />
               </a>
             </div>
           </div>
