@@ -116,7 +116,7 @@ export async function registerRoutes(
         html: `
           <h3>Welcome ${name}!</h3>
           <p>Thank you for registering. Please click the link below to verify your email address:</p>
-          <a href="${process.env.VITE_API_BASE || "http://localhost:5000"}/verify-email?token=${verificationToken}">Verify Email Address</a>
+          <a href="${process.env.VITE_API_BASE || "http://localhost:5000"}/api/verify-email?token=${verificationToken}">Verify Email Address</a>
         `,
       };
       transporter.sendMail(mailOptions).catch(console.error);
@@ -180,8 +180,10 @@ export async function registerRoutes(
         emailVerified: true,
         verificationToken: null,
       });
-      req.session.userId = user.id; // Now they can enter
-      res.redirect("/dashboard?verified=true");
+      // Clear any existing session to force fresh login if desired, 
+      // or keep it if you want automatic entry. 
+      // The user said "allows user to login", so redirecting to login is safer.
+      res.redirect("/login?verified=true");
     } catch (error) {
       res.status(500).json({ error: "Failed to verify email" });
     }
@@ -240,7 +242,7 @@ export async function registerRoutes(
         subject: "Verify Your Email Address",
         html: `
           <p>Please click the link below to verify your email address:</p>
-          <a href="${process.env.VITE_API_BASE || "http://localhost:5000"}/verify-email?token=${verificationToken}">Verify Email Address</a>
+          <a href="${process.env.VITE_API_BASE || "http://localhost:5000"}/api/verify-email?token=${verificationToken}">Verify Email Address</a>
         `,
       };
       await transporter.sendMail(mailOptions);

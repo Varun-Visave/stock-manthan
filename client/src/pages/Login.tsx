@@ -55,6 +55,9 @@ export default function Login() {
     }
   };
 
+  const locationSearch = window.location.search;
+  const isVerified = new URLSearchParams(locationSearch).get("verified") === "true";
+
   return (
     <div className="min-h-screen pt-24 pb-12 flex items-center justify-center bg-gray-50 dark:bg-[#0a0f16]">
       <div className="bg-white dark:bg-card p-10 rounded-xl shadow-sm border border-border w-full max-w-md mx-4">
@@ -63,6 +66,12 @@ export default function Login() {
           <p className="text-muted-foreground mt-2">Access your research and insights.</p>
         </div>
         
+        {isVerified && (
+          <div className="bg-green-50 text-green-700 p-4 rounded-lg text-sm mb-6 border border-green-200">
+            Email verified successfully! You can now log in to your account.
+          </div>
+        )}
+
         {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
